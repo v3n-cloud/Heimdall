@@ -1,18 +1,22 @@
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_MODULE_PATH
-    ${CMAKE_SOURCE_DIR}/cmake
-    ${CMAKE_MODULE_PATH})
+project(Heimdall LANGUAGES CXX)
 
-project(Heimdall)
+include(GNUInstallDirs)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-option(DISABLE_FRONTEND "Disable GUI frontend" OFF)
+option(BUILD_FRONTEND "Build the Qt GUI frontend" ON)
+option(DISABLE_FRONTEND "Deprecated: disable the Qt GUI frontend" OFF)
+if(DISABLE_FRONTEND)
+    set(BUILD_FRONTEND OFF)
+endif()
 
 add_subdirectory(libpit)
 add_subdirectory(heimdall)
-if(NOT DISABLE_FRONTEND)
+
+if(BUILD_FRONTEND)
     add_subdirectory(heimdall-frontend)
     add_dependencies(heimdall-frontend heimdall)
 endif()

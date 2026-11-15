@@ -1,23 +1,10 @@
-cmake_minimum_required(VERSION 2.8.4)
+project(heimdall-frontend LANGUAGES CXX)
 
-project(heimdall-frontend)
-
-set(LIBPIT_INCLUDE_DIRS
-    ../libpit/source)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON) # moc files are generated in build (current) directory
-
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(ZLIB REQUIRED)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-
-if(MINGW)
-    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
-endif(MINGW)
-
-include_directories(${LIBPIT_INCLUDE_DIRS})
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(HEIMDALL_FRONTEND_SOURCE_FILES
     source/aboutform.cpp
@@ -41,16 +28,17 @@ add_executable(heimdall-frontend WIN32
     ${HEIMDALL_FRONTEND_FORMS}
     ${HEIMDALL_FRONTEND_RESOURCES})
 
+target_compile_features(heimdall-frontend PRIVATE cxx_std_11)
+target_compile_definitions(heimdall-frontend PRIVATE QT_LARGEFILE_SUPPORT)
+target_link_libraries(heimdall-frontend PRIVATE pit Qt5::Widgets ZLIB::ZLIB)
+
 include(LargeFiles)
 use_large_files(heimdall-frontend YES)
 
-set_property(TARGET heimdall-frontend
-    APPEND PROPERTY COMPILE_DEFINITIONS "QT_LARGEFILE_SUPPORT")
+if(MINGW)
+    target_link_options(heimdall-frontend PRIVATE -static-libgcc -static-libstdc++ -static)
+endif()
 
-target_link_libraries(heimdall-frontend pit)
-target_link_libraries(heimdall-frontend Qt5::Widgets)
-target_link_libraries(heimdall-frontend z)
-install (TARGETS heimdall-frontend
-		RUNTIME	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-		LIBRARY	DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
+install(TARGETS heimdall-frontend
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")

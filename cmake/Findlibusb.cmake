@@ -1,36 +1,31 @@
-find_path(LIBUSB_INCLUDE_DIR
-    NAMES
-        libusb.h
-    PATHS
-        /usr/local/include
-        /opt/local/include
-        /usr/include
-    PATH_SUFFIXES
-        libusb-1.0
-)
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(PC_LIBUSB QUIET libusb-1.0)
+endif()
 
-if (libusb_USE_STATIC_LIBS AND NOT MSVC)
-    set (LIBUSB_LIB_PREFIX "lib" CACHE INTERNAL "libusb library name prefix passed to find_library")
-    set (LIBUSB_LIB_SUFFIX ".a" CACHE INTERNAL "libusb library name suffix passed to find_library")
-else (libusb_USE_STATIC_LIBS AND NOT MSVC)
-    set (LIBUSB_LIB_PREFIX "" CACHE INTERNAL "libusb library name prefix passed to find_library")
-    set (LIBUSB_LIB_SUFFIX "" CACHE INTERNAL "libusb library name suffix passed to find_library")
-endif (libusb_USE_STATIC_LIBS AND NOT MSVC)
+find_path(LIBUSB_INCLUDE_DIR
+    NAMES libusb.h
+    HINTS ${PC_LIBUSB_INCLUDE_DIRS}
+    PATH_SUFFIXES libusb-1.0)
 
 find_library(LIBUSB_LIBRARY
-    NAMES
-        ${LIBUSB_LIB_PREFIX}usb-1.0${LIBUSB_LIB_SUFFIX} ${LIBUSB_LIB_PREFIX}usb${LIBUSB_LIB_SUFFIX}
-    PATHS
-        /usr/local/lib
-        /opt/local/lib
-        /usr/lib
-)
+    NAMES usb-1.0 usb
+    HINTS ${PC_LIBUSB_LIBRARY_DIRS})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(libusb REQUIRED_VARS LIBUSB_LIBRARY LIBUSB_INCLUDE_DIR)
+find_package_handle_standard_args(libusb
+    REQUIRED_VARS LIBUSB_LIBRARY LIBUSB_INCLUDE_DIR)
 
-if (LIBUSB_FOUND)
-    set(LIBUSB_INCLUDE_DIRS ${LIBUSB_INCLUDE_DIR})
-    set(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
-    mark_as_advanced(LIBUSB_INCLUDE_DIR LIBUSB_LIBRARY)
-endif (LIBUSB_FOUND)
+if(libusb_FOUND)
+    set(LIBUSB_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
+    set(LIBUSB_LIBRARIES "${LIBUSB_LIBRARY}")
+
+    if(NOT TARGET LibUSB::LibUSB)
+        add_library(LibUSB::LibUSB UNKNOWN IMPORTED)
+        set_target_properties(LibUSB::LibUSB PROPERTIES
+            IMPORTED_LOCATION "${LIBUSB_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${LIBUSB_INCLUDE_DIR}")
+    endif()
+endif()
+
+mark_as_advanced(LIBUSB_INCLUDE_DIR LIBUSB_LIBRARY)
