@@ -13,6 +13,14 @@ if(DISABLE_FRONTEND)
     set(BUILD_FRONTEND OFF)
 endif()
 
+if(BUILD_FRONTEND)
+    find_package(Qt5 QUIET COMPONENTS Widgets)
+    if(NOT Qt5_FOUND)
+        message(WARNING "Qt5 was not found; the Heimdall GUI frontend will be disabled. Set BUILD_FRONTEND=OFF to silence this warning or install Qt5 development packages.")
+        set(BUILD_FRONTEND OFF)
+    endif()
+endif()
+
 add_subdirectory(libpit)
 add_subdirectory(heimdall)
 

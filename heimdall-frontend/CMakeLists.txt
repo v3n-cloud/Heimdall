@@ -1,5 +1,9 @@
 project(heimdall-frontend LANGUAGES CXX)
 
+if(NOT BUILD_FRONTEND)
+    return()
+endif()
+
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(ZLIB REQUIRED)
 
